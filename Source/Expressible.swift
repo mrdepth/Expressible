@@ -15,12 +15,15 @@ extension Expressible {
 	public var caseInsensitive: Expressible { return CaseInsensitiveExpression(base: self) }
 	
 	public func `in`(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .in) }
-	public func like(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .like) }
-	public func beginsWith(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .beginsWith) }
-	public func endsWith(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .endsWith) }
-	public func contains(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .contains) }
-	public func matches(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .matches) }
 	public func `as`<T>(_ type: T.Type, name: String) -> PropertyDescriptionConvertible { return CastExpression<T>(base: self, name: name) }
+}
+
+extension StringExpressible {
+	public func like(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .like) }
+	public func beginsWith(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .beginsWith) }
+	public func endsWith(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .endsWith) }
+	public func contains(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .contains) }
+	public func matches(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .matches) }
 }
 
 public func == (lhs: Expressible, rhs: Expressible?) -> Predictable { return ComparisonPredicate(lhs: lhs, rhs: rhs ?? Null(), operator: .equalTo)}
@@ -30,61 +33,80 @@ public func <= (lhs: Expressible, rhs: Expressible) -> Predictable { return Comp
 public func > (lhs: Expressible, rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: lhs, rhs: rhs, operator: .greaterThan)}
 public func < (lhs: Expressible, rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: lhs, rhs: rhs, operator: .lessThan)}
 
-public func + (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "add:to:")}
-public func - (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "from:subtract")}
-public func * (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "multiply:by:")}
-public func / (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "divide:by:")}
-public func % (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "modulus:by:")}
-public func & (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "bitwiseAnd:with:")}
-public func | (lhs: Expressible, rhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs, rhs], function: "bitwiseXor:with:")}
-public prefix func ~ (lhs: Expressible) -> Expressible { return FunctionExpression(arguments: [lhs], function: "onesComplement:")}
+public func + (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "add:to:")}
+public func - (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "from:subtract")}
+public func * (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "multiply:by:")}
+public func / (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "divide:by:")}
+public func % (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "modulus:by:")}
+public func & (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "bitwiseAnd:with:")}
+public func | (lhs: NumericExpressible, rhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs, rhs], function: "bitwiseXor:with:")}
+public prefix func ~ (lhs: NumericExpressible) -> NumericExpressible { return FunctionExpression(arguments: [lhs], function: "onesComplement:")}
 
 public prefix func ! (lhs: Predictable) -> Predictable { return NotPredicate(base: lhs) }
 public func && (lhs: Predictable, rhs: Predictable) -> Predictable { return CompoundPredicate(lhs: lhs, rhs: rhs, logicalType: .and)}
 public func || (lhs: Predictable, rhs: Predictable) -> Predictable { return CompoundPredicate(lhs: lhs, rhs: rhs, logicalType: .or)}
 
 extension Expressible {
-	public var average: Expressible { return FunctionExpression(arguments: [self], function: "average:") }
-	public var count: Expressible { return FunctionExpression(arguments: [self], function: "count:") }
-	public var sum: Expressible { return FunctionExpression(arguments: [self], function: "sum:") }
-	public var min: Expressible { return FunctionExpression(arguments: [self], function: "min:") }
-	public var max: Expressible { return FunctionExpression(arguments: [self], function: "max:") }
-	public var abs: Expressible { return FunctionExpression(arguments: [self], function: "abs:") }
+	public var count: NumericExpressible { return FunctionExpression(arguments: [self], function: "count:") }
 }
 
-extension KeyPath: CollectionExpressible where Value == NSSet? {
+extension NumericExpressible {
+	public var average: NumericExpressible { return FunctionExpression(arguments: [self], function: "average:") }
+	public var sum: NumericExpressible { return FunctionExpression(arguments: [self], function: "sum:") }
+	public var min: NumericExpressible { return FunctionExpression(arguments: [self], function: "min:") }
+	public var max: NumericExpressible { return FunctionExpression(arguments: [self], function: "max:") }
+	public var abs: NumericExpressible { return FunctionExpression(arguments: [self], function: "abs:") }
 }
+
+extension KeyPath: CollectionExpressible where Value: CollectionExpressible {}
+extension KeyPath: StringExpressible where Value: StringExpressible {}
+extension KeyPath: NumericExpressible where Value: NumericExpressible{}
 
 extension CollectionExpressible {
-	public func any<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return AggregateExpression(base: self, child: keyPath, comparisonModifier: .any) }
-	public func all<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return AggregateExpression(base: self, child: keyPath, comparisonModifier: .all) }
+	public func any<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .any) }
+	public func all<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .all) }
 	public func contains(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: rhs, rhs: self, operator: .in) }
+
+	public func any<R, V: StringExpressible>(_ keyPath: KeyPath<R, V>) -> StringExpressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .any) }
+	public func all<R, V: StringExpressible>(_ keyPath: KeyPath<R, V>) -> StringExpressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .all) }
+	public func any<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .any) }
+	public func all<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .all) }
+
+	public func count<R, V>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "count:") }
 	
-	public func average<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "average:") }
-	public func count<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "count:") }
-	public func sum<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "sum:") }
-	public func min<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "min:") }
-	public func max<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "max:") }
-	public func abs<R, V>(_ keyPath: KeyPath<R, V>) -> Expressible { return FunctionExpression(arguments: [AggregateExpression(base: self, child: keyPath, comparisonModifier: .direct)], function: "abs:") }
+	public func average<R, V>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "average:") }
+	public func sum<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "sum:") }
+	public func min<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "min:") }
+	public func max<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "max:") }
+	public func abs<R, V: NumericExpressible>(_ keyPath: KeyPath<R, V>) -> NumericExpressible { return FunctionExpression(arguments: [AggregateExpression<V>(base: self, child: keyPath, comparisonModifier: .direct)], function: "abs:") }
+	
 	public func subquery(_ predicate: Predictable) -> CollectionExpressible { return SubqueryExpression(base: self, variable: "x", predicate: predicate) }
 }
 
 
-extension Int: Expressible {}
-extension UInt: Expressible {}
-extension Int16: Expressible {}
-extension UInt16: Expressible {}
-extension Int32: Expressible {}
-extension UInt32: Expressible {}
-extension Int64: Expressible {}
-extension UInt64: Expressible {}
-extension Double: Expressible {}
-extension Float: Expressible {}
-extension String: Expressible {}
-extension Array: Expressible where Element: Expressible {}
+extension Int: NumericExpressible {}
+extension UInt: NumericExpressible {}
+extension Int16: NumericExpressible {}
+extension UInt16: NumericExpressible {}
+extension Int32: NumericExpressible {}
+extension UInt32: NumericExpressible {}
+extension Int64: NumericExpressible {}
+extension UInt64: NumericExpressible {}
+extension Double: NumericExpressible {}
+extension Float: NumericExpressible {}
+extension NSDecimalNumber: NumericExpressible {}
+extension Decimal: NumericExpressible {}
+extension String: StringExpressible {}
+extension Substring: StringExpressible {}
+extension Array: CollectionExpressible where Element: Expressible {}
+extension NSSet: CollectionExpressible {}
+extension NSOrderedSet: CollectionExpressible {}
 extension Date: Expressible {}
 extension Data: Expressible {}
 extension NSManagedObject: Expressible {}
+extension Optional: StringExpressible where Wrapped: StringExpressible {}
+extension Optional: Expressible where Wrapped: Expressible {}
+extension Optional: CollectionExpressible where Wrapped: CollectionExpressible {}
 
 
 extension NSManagedObjectContext {
@@ -188,12 +210,14 @@ public protocol Expressible {
 	var comparisonOptions: NSComparisonPredicate.Options {get}
 }
 
+public protocol StringExpressible: Expressible {}
+
 public protocol PropertyDescriptionConvertible {
 	func propertyDescription(for operand: Operand) -> NSPropertyDescription
 }
 
-public protocol CollectionExpressible: Expressible {
-}
+public protocol CollectionExpressible: Expressible {}
+public protocol NumericExpressible: Expressible {}
 
 
 extension Expressible {
@@ -202,7 +226,7 @@ extension Expressible {
 	public var comparisonOptions: NSComparisonPredicate.Options { return [] }
 }
 
-fileprivate struct AggregateExpression: Expressible {
+fileprivate struct AggregateExpression<Value>: Expressible {
 	var base: Expressible
 	var child: Expressible
 	var comparisonModifier: NSComparisonPredicate.Modifier
@@ -212,6 +236,10 @@ fileprivate struct AggregateExpression: Expressible {
 	var name: String { return expression(for: .self).keyPath }
 }
 
+extension AggregateExpression: StringExpressible where Value: StringExpressible {}
+extension AggregateExpression: NumericExpressible where Value: NumericExpressible {}
+extension AggregateExpression: CollectionExpressible where Value: CollectionExpressible {}
+
 fileprivate struct CaseInsensitiveExpression: Expressible {
 	var base: Expressible
 	func expression(for operand: Operand) -> NSExpression { return base.expression(for: operand) }
@@ -219,7 +247,7 @@ fileprivate struct CaseInsensitiveExpression: Expressible {
 	var comparisonOptions: NSComparisonPredicate.Options { return base.comparisonOptions.union([.caseInsensitive]) }
 }
 
-fileprivate struct FunctionExpression: Expressible {
+fileprivate struct FunctionExpression: NumericExpressible {
 	var arguments: [Expressible]
 	var function: String
 	func expression(for operand: Operand) -> NSExpression { return NSExpression(forFunction: function, arguments: arguments.map{$0.expression(for: operand)}) }

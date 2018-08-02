@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1211C7552112DC1A005C5F81 /* Expressible.h in Headers */ = {isa = PBXBuildFile; fileRef = 1211C7532112DC1A005C5F81 /* Expressible.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1211C7562112DC1A005C5F81 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1211C7542112DC1A005C5F81 /* Info.plist */; };
 		1211C7582112DC3D005C5F81 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1211C7572112DC3D005C5F81 /* Expressible.swift */; };
 /* End PBXBuildFile section */
 
@@ -125,7 +124,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1211C7562112DC1A005C5F81 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
