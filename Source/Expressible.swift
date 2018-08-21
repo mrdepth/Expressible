@@ -12,13 +12,16 @@ import CoreData
 //MARK: - Grammar
 
 extension Expressible {
-	public var caseInsensitive: Expressible { return CaseInsensitiveExpression(base: self) }
 	
 	public func `in`(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .in) }
 	public func `as`<T>(_ type: T.Type, name: String) -> PropertyDescriptionConvertible { return CastExpression<T>(base: self, name: name) }
 }
 
 extension StringExpressible {
+	public var caseInsensitive: Expressible {
+		return CaseInsensitiveExpression(base: self)
+		
+	}
 	public func like(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .like) }
 	public func beginsWith(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .beginsWith) }
 	public func endsWith(_ rhs: StringExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .endsWith) }
@@ -111,16 +114,21 @@ extension Optional: CollectionExpressible where Wrapped: CollectionExpressible {
 
 extension NSManagedObjectContext {
 	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T> {
-		return Request(context: self)
+		return Request(context: self, entity: T.entity())
 	}
+	
+	public func from<T: NSManagedObject>(_ entity: NSEntityDescription) -> Request<T, T> {
+		return Request(context: self, entity: entity)
+	}
+
 }
 
 public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 	private let context: NSManagedObjectContext
 	
-	fileprivate init(context: NSManagedObjectContext) {
+	fileprivate init(context: NSManagedObjectContext, entity: NSEntityDescription) {
 		fetchRequest = NSFetchRequest<Result>()
-		fetchRequest.entity = Entity.entity()
+		fetchRequest.entity = entity
 		self.context = context
 	}
 	
@@ -331,7 +339,7 @@ fileprivate struct ComparisonPredicate: Predictable {
 	var `operator`: NSComparisonPredicate.Operator
 	
 	func predicate(for operand: Operand) -> NSPredicate {
-		return NSComparisonPredicate(leftExpression: lhs.expression(for: operand), rightExpression: rhs.expression(for: operand), modifier: lhs.comparisonModifier, type: self.operator, options: lhs.comparisonOptions)
+		return NSComparisonPredicate(leftExpression: lhs.expression(for: operand), rightExpression: rhs.expression(for: operand), modifier: lhs.comparisonModifier, type: self.operator, options: lhs.comparisonOptions.union(rhs.comparisonOptions))
 	}
 }
 
