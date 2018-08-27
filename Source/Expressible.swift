@@ -101,7 +101,7 @@ extension NSDecimalNumber: NumericExpressible {}
 extension Decimal: NumericExpressible {}
 extension String: StringExpressible {}
 extension Substring: StringExpressible {}
-extension Array: CollectionExpressible where Element: Expressible {}
+extension Array: Expressible, CollectionExpressible where Element: Expressible {}
 extension NSSet: CollectionExpressible {}
 extension NSOrderedSet: CollectionExpressible {}
 extension Date: Expressible {}
