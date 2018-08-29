@@ -114,7 +114,7 @@ extension Optional: CollectionExpressible where Wrapped: CollectionExpressible {
 
 extension NSManagedObjectContext {
 	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T> {
-		return Request(context: self, entity: T.entity())
+		return Request(context: self, entity: self.entity(for: entity))
 	}
 	
 	public func from<T: NSManagedObject>(_ entity: NSEntityDescription) -> Request<T, T> {
@@ -157,13 +157,13 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 	}
 	
 	public func select(_ what: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary> {
-		fetchRequest.propertiesToFetch = what.map{$0.propertyDescription(for: .self)} + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.propertiesToFetch = what.map{$0.propertyDescription(for: .self, context: context)} + (fetchRequest.propertiesToFetch ?? [])
 		fetchRequest.resultType = .dictionaryResultType
 		return Request<Entity, NSDictionary>(self)
 	}
 	
 	public func group(by expression: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary> {
-		fetchRequest.propertiesToGroupBy = expression.map{$0.propertyDescription(for: .self)} + (fetchRequest.propertiesToGroupBy ?? [])
+		fetchRequest.propertiesToGroupBy = expression.map{$0.propertyDescription(for: .self, context: context)} + (fetchRequest.propertiesToGroupBy ?? [])
 		fetchRequest.resultType = .dictionaryResultType
 		return Request<Entity, NSDictionary>(self)
 	}
@@ -221,7 +221,7 @@ public protocol Expressible {
 public protocol StringExpressible: Expressible {}
 
 public protocol PropertyDescriptionConvertible {
-	func propertyDescription(for operand: Operand) -> NSPropertyDescription
+	func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription
 }
 
 public protocol CollectionExpressible: Expressible {}
@@ -269,7 +269,7 @@ fileprivate struct CastExpression<T>: Expressible, PropertyDescriptionConvertibl
 	var comparisonModifier: NSComparisonPredicate.Modifier { return base.comparisonModifier }
 	var comparisonOptions: NSComparisonPredicate.Options { return base.comparisonOptions }
 	
-	func propertyDescription(for operand: Operand) -> NSPropertyDescription {
+	func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
 		let expressionDescription = NSExpressionDescription()
 		expressionDescription.name = name
 		expressionDescription.expression = expression(for: operand)
@@ -368,7 +368,16 @@ extension KeyPath: Expressible {
 }
 
 extension KeyPath: PropertyDescriptionConvertible where Root: NSManagedObject {
-	public func propertyDescription(for operand: Operand) -> NSPropertyDescription {
-		return Root.entity().propertiesByName[expression(for: operand).keyPath]!
+	public func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
+		return context.entity(for: Root.self).propertiesByName[expression(for: operand).keyPath]!
+	}
+}
+
+extension NSManagedObjectContext {
+	fileprivate func entity<T: NSManagedObject>(for type: T.Type) -> NSEntityDescription {
+		let coordinator = sequence(first: self, next: {$0.parent}).lazy.map{$0.persistentStoreCoordinator}.first {$0 != nil}
+		guard let model = coordinator??.managedObjectModel else {return T.entity()}
+		let className = NSStringFromClass(type)
+		return model.entities.first(where: {$0.managedObjectClassName == className}) ?? T.entity()
 	}
 }
