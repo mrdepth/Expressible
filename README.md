@@ -3,7 +3,7 @@ Expressible library helps you to fetch data from CoreData.
 
 ## Requirements
 - iOS 10.0+
-- Swift 4.1+
+- Swift 4.2
 
 ## Usage
 

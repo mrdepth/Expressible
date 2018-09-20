@@ -111,7 +111,6 @@ extension Optional: StringExpressible where Wrapped: StringExpressible {}
 extension Optional: Expressible where Wrapped: Expressible {}
 extension Optional: CollectionExpressible where Wrapped: CollectionExpressible {}
 
-
 extension NSManagedObjectContext {
 	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T> {
 		return Request(context: self, entity: self.entity(for: entity))
@@ -138,6 +137,10 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 	}
 	
 	public let fetchRequest: NSFetchRequest<Result>
+	
+	public func fetchedResultsController(sectionName: PropertyDescriptionConvertible? = nil, cacheName: String? = nil) -> NSFetchedResultsController<Result> {
+		return NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: sectionName?.name, cacheName: cacheName)
+	}
 	
 	public func filter(_ predicate: Predictable ) -> Request {
 		if let old = fetchRequest.predicate {
@@ -222,6 +225,7 @@ public protocol StringExpressible: Expressible {}
 
 public protocol PropertyDescriptionConvertible {
 	func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription
+	var name: String {get}
 }
 
 public protocol CollectionExpressible: Expressible {}
@@ -319,6 +323,12 @@ fileprivate struct Null: Expressible {
 	func expression(for operand: Operand) -> NSExpression { return NSExpression(forConstantValue: nil) }
 }
 
+public let `Self`: Expressible = EvaluatedObject()
+
+fileprivate struct EvaluatedObject: Expressible {
+	func expression(for operand: Operand) -> NSExpression { return NSExpression.expressionForEvaluatedObject() }
+}
+
 fileprivate struct SubqueryExpression: CollectionExpressible {
 	var base: Expressible
 	var variable: String
@@ -370,6 +380,10 @@ extension KeyPath: Expressible {
 extension KeyPath: PropertyDescriptionConvertible where Root: NSManagedObject {
 	public func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
 		return context.entity(for: Root.self).propertiesByName[expression(for: operand).keyPath]!
+	}
+	
+	public var name: String {
+		return expression(for: .self).keyPath
 	}
 }
 

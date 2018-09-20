@@ -9,13 +9,33 @@
 /* Begin PBXBuildFile section */
 		1211C7552112DC1A005C5F81 /* Expressible.h in Headers */ = {isa = PBXBuildFile; fileRef = 1211C7532112DC1A005C5F81 /* Expressible.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1211C7582112DC3D005C5F81 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1211C7572112DC3D005C5F81 /* Expressible.swift */; };
+		12A8430F215392FE00570A95 /* Expressible_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A8430E215392FE00570A95 /* Expressible_Tests.swift */; };
+		12A84311215392FE00570A95 /* Expressible.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1211C7472112DBC5005C5F81 /* Expressible.framework */; };
+		12A843172153930F00570A95 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1211C7572112DC3D005C5F81 /* Expressible.swift */; };
+		12A8431B2153936800570A95 /* Example.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 12A843182153936800570A95 /* Example.xcdatamodeld */; };
+		12A8431C2153936800570A95 /* worldcities.csv in Resources */ = {isa = PBXBuildFile; fileRef = 12A8431A2153936800570A95 /* worldcities.csv */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		12A84312215392FE00570A95 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1211C73E2112DBC5005C5F81 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1211C7462112DBC5005C5F81;
+			remoteInfo = Expressible;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1211C7472112DBC5005C5F81 /* Expressible.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Expressible.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1211C7532112DC1A005C5F81 /* Expressible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Expressible.h; sourceTree = "<group>"; };
 		1211C7542112DC1A005C5F81 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1211C7572112DC3D005C5F81 /* Expressible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expressible.swift; sourceTree = "<group>"; };
+		12A8430C215392FE00570A95 /* Expressible-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Expressible-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		12A8430E215392FE00570A95 /* Expressible_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expressible_Tests.swift; sourceTree = "<group>"; };
+		12A84310215392FE00570A95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		12A843192153936800570A95 /* Example.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Example.xcdatamodel; sourceTree = "<group>"; };
+		12A8431A2153936800570A95 /* worldcities.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = worldcities.csv; path = Example/Example/worldcities.csv; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +46,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		12A84309215392FE00570A95 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				12A84311215392FE00570A95 /* Expressible.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				1211C7522112DC1A005C5F81 /* Source */,
+				12A8430D215392FE00570A95 /* Expressible-Tests */,
 				1211C7482112DBC5005C5F81 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				1211C7472112DBC5005C5F81 /* Expressible.framework */,
+				12A8430C215392FE00570A95 /* Expressible-Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -53,6 +83,17 @@
 				1211C7572112DC3D005C5F81 /* Expressible.swift */,
 			);
 			path = Source;
+			sourceTree = "<group>";
+		};
+		12A8430D215392FE00570A95 /* Expressible-Tests */ = {
+			isa = PBXGroup;
+			children = (
+				12A8430E215392FE00570A95 /* Expressible_Tests.swift */,
+				12A843182153936800570A95 /* Example.xcdatamodeld */,
+				12A8431A2153936800570A95 /* worldcities.csv */,
+				12A84310215392FE00570A95 /* Info.plist */,
+			);
+			path = "Expressible-Tests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,18 +128,40 @@
 			productReference = 1211C7472112DBC5005C5F81 /* Expressible.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		12A8430B215392FE00570A95 /* Expressible-Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 12A84316215392FE00570A95 /* Build configuration list for PBXNativeTarget "Expressible-Tests" */;
+			buildPhases = (
+				12A84308215392FE00570A95 /* Sources */,
+				12A84309215392FE00570A95 /* Frameworks */,
+				12A8430A215392FE00570A95 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				12A84313215392FE00570A95 /* PBXTargetDependency */,
+			);
+			name = "Expressible-Tests";
+			productName = "Expressible-Tests";
+			productReference = 12A8430C215392FE00570A95 /* Expressible-Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		1211C73E2112DBC5005C5F81 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1000;
 				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Artem Shimanski";
 				TargetAttributes = {
 					1211C7462112DBC5005C5F81 = {
 						CreatedOnToolsVersion = 9.4;
 						LastSwiftMigration = "";
+					};
+					12A8430B215392FE00570A95 = {
+						CreatedOnToolsVersion = 10.0;
 					};
 				};
 			};
@@ -115,6 +178,7 @@
 			projectRoot = "";
 			targets = (
 				1211C7462112DBC5005C5F81 /* Expressible */,
+				12A8430B215392FE00570A95 /* Expressible-Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -124,6 +188,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12A8430A215392FE00570A95 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				12A8431C2153936800570A95 /* worldcities.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,7 +210,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		12A84308215392FE00570A95 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				12A843172153930F00570A95 /* Expressible.swift in Sources */,
+				12A8431B2153936800570A95 /* Example.xcdatamodeld in Sources */,
+				12A8430F215392FE00570A95 /* Expressible_Tests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		12A84313215392FE00570A95 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1211C7462112DBC5005C5F81 /* Expressible */;
+			targetProxy = 12A84312215392FE00570A95 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1211C74D2112DBC5005C5F81 /* Debug */ = {
@@ -316,6 +406,47 @@
 			};
 			name = Release;
 		};
+		12A84314215392FE00570A95 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YB4RLQ4M9A;
+				INFOPLIST_FILE = "Expressible-Tests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.shimanski.Expressible-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		12A84315215392FE00570A95 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YB4RLQ4M9A;
+				INFOPLIST_FILE = "Expressible-Tests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.shimanski.Expressible-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -337,7 +468,30 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		12A84316215392FE00570A95 /* Build configuration list for PBXNativeTarget "Expressible-Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12A84314215392FE00570A95 /* Debug */,
+				12A84315215392FE00570A95 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		12A843182153936800570A95 /* Example.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				12A843192153936800570A95 /* Example.xcdatamodel */,
+			);
+			currentVersion = 12A843192153936800570A95 /* Example.xcdatamodel */;
+			name = Example.xcdatamodeld;
+			path = ../Example/Example/Example.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 1211C73E2112DBC5005C5F81 /* Project object */;
 }
