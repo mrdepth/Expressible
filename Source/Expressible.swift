@@ -111,6 +111,12 @@ extension Optional: StringExpressible where Wrapped: StringExpressible {}
 extension Optional: Expressible where Wrapped: Expressible {}
 extension Optional: CollectionExpressible where Wrapped: CollectionExpressible {}
 
+extension Bool: Predictable {
+	public func predicate(for operand: Operand) -> NSPredicate {
+		return self ? NSPredicate(format: "TRUEPREDICATE") : NSPredicate(format: "FALSEPREDICATE")
+	}
+}
+
 extension NSManagedObjectContext {
 	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T> {
 		return Request(context: self, entity: self.entity(for: entity))
@@ -143,11 +149,13 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 	}
 	
 	public func filter(_ predicate: Predictable ) -> Request {
+		let p = predicate.predicate(for: .self)
+		
 		if let old = fetchRequest.predicate {
-			fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [old, predicate.predicate(for: .self)])
+			fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [old, p])
 		}
 		else {
-			fetchRequest.predicate = predicate.predicate(for: .self)
+			fetchRequest.predicate = p
 		}
 		return self
 	}
