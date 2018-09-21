@@ -18,7 +18,7 @@ extension Expressible {
 }
 
 extension StringExpressible {
-	public var caseInsensitive: Expressible {
+	public var caseInsensitive: StringExpressible {
 		return CaseInsensitiveExpression(base: self)
 		
 	}
@@ -260,8 +260,8 @@ extension AggregateExpression: StringExpressible where Value: StringExpressible 
 extension AggregateExpression: NumericExpressible where Value: NumericExpressible {}
 extension AggregateExpression: CollectionExpressible where Value: CollectionExpressible {}
 
-fileprivate struct CaseInsensitiveExpression: Expressible {
-	var base: Expressible
+fileprivate struct CaseInsensitiveExpression: StringExpressible {
+	var base: StringExpressible
 	func expression(for operand: Operand) -> NSExpression { return base.expression(for: operand) }
 	var comparisonModifier: NSComparisonPredicate.Modifier { return base.comparisonModifier }
 	var comparisonOptions: NSComparisonPredicate.Options { return base.comparisonOptions.union([.caseInsensitive]) }
