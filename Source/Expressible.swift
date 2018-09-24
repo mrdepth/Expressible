@@ -99,6 +99,7 @@ extension Double: NumericExpressible {}
 extension Float: NumericExpressible {}
 extension NSDecimalNumber: NumericExpressible {}
 extension Decimal: NumericExpressible {}
+extension Bool: Expressible {}
 extension String: StringExpressible {}
 extension Substring: StringExpressible {}
 extension Array: Expressible, CollectionExpressible where Element: Expressible {}
