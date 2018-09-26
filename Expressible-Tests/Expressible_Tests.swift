@@ -95,6 +95,34 @@ class Expressible_Tests: XCTestCase {
 		
 		XCTAssertEqual(result1, result2)
 	}
+	
+	func testIn() {
+		let context = persistentContainer.viewContext
+
+		let result1 = try! context
+			.from(Country.self)
+			.filter((\Country.name).in(["Belarus", "United States of America"]))
+			.all()
+
+		let result2 = try! context
+			.from(Country.self)
+			.filter((\Country.name).in(Set(["Belarus", "United States of America"])))
+			.all()
+
+		let result3 = try! context
+			.from(Country.self)
+			.filter((\Country.name).in(Set(["Belarus", "United States of America"]) as NSSet))
+			.all()
+
+		
+		let request = NSFetchRequest<Country>(entityName: "Country")
+		request.predicate = NSPredicate(format: "name in %@", ["Belarus", "United States of America"])
+		let result4 = try! context.fetch(request)
+		
+		XCTAssertEqual(result1, result2)
+		XCTAssertEqual(result1, result3)
+		XCTAssertEqual(result1, result4)
+	}
 
 	func testSelf() {
 		let context = persistentContainer.viewContext

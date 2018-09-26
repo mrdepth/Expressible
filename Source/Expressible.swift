@@ -13,7 +13,7 @@ import CoreData
 
 extension Expressible {
 	
-	public func `in`(_ rhs: Expressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .in) }
+	public func `in`(_ rhs: CollectionExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .in) }
 	public func `as`<T>(_ type: T.Type, name: String) -> PropertyDescriptionConvertible { return CastExpression<T>(base: self, name: name) }
 }
 
@@ -103,6 +103,7 @@ extension Bool: Expressible {}
 extension String: StringExpressible {}
 extension Substring: StringExpressible {}
 extension Array: Expressible, CollectionExpressible where Element: Expressible {}
+extension Set: Expressible, CollectionExpressible where Element: Expressible {}
 extension NSSet: CollectionExpressible {}
 extension NSOrderedSet: CollectionExpressible {}
 extension Date: Expressible {}
