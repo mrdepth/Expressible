@@ -216,6 +216,11 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 		fetchRequest.fetchOffset = bounds.lowerBound
 		return try context.fetch(fetchRequest)
 	}
+	
+	public var objectIDs: Request<Entity, NSManagedObjectID> {
+		fetchRequest.resultType = .managedObjectIDResultType
+		return Request<Entity, NSManagedObjectID>(self)
+	}
 }
 
 //MARK: - Implementation
