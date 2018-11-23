@@ -14,7 +14,7 @@ import CoreData
 extension Expressible {
 	
 	public func `in`(_ rhs: CollectionExpressible) -> Predictable { return ComparisonPredicate(lhs: self, rhs: rhs, operator: .in) }
-	public func `as`<T>(_ type: T.Type, name: String) -> PropertyDescriptionConvertible { return CastExpression<T>(base: self, name: name) }
+	public func `as`<T>(_ type: T.Type, name: String) -> CastExpression<T> { return CastExpression<T>(base: self, name: name) }
 }
 
 extension StringExpressible {
@@ -120,33 +120,36 @@ extension Bool: Predictable {
 }
 
 extension NSManagedObjectContext {
-	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T> {
+	public func from<T: NSManagedObject>(_ entity: T.Type) -> Request<T, T, T> {
 		return Request(context: self, entity: self.entity(for: entity))
 	}
 	
-	public func from<T: NSManagedObject>(_ entity: NSEntityDescription) -> Request<T, T> {
+	public func from<T: NSManagedObject>(_ entity: NSEntityDescription) -> Request<T, T, T> {
 		return Request(context: self, entity: entity)
 	}
 
 }
 
-public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
+public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFetchRequestResult> {
 	private let context: NSManagedObjectContext
+	private let transform: ((FetchRequestResult) -> Result)?
 	
 	fileprivate init(context: NSManagedObjectContext, entity: NSEntityDescription) {
-		fetchRequest = NSFetchRequest<Result>()
+		fetchRequest = NSFetchRequest<FetchRequestResult>()
 		fetchRequest.entity = entity
+		transform = nil
 		self.context = context
 	}
 	
-	fileprivate init<R: NSFetchRequestResult>(_ other: Request<Entity, R>) {
+	fileprivate init<R, F: NSFetchRequestResult>(_ other: Request<Entity, R, F>, transform: ((FetchRequestResult) -> Result)? = nil) {
 		context = other.context
-		fetchRequest = other.fetchRequest as! NSFetchRequest<Result>
+		self.transform = transform
+		fetchRequest = other.fetchRequest as! NSFetchRequest<FetchRequestResult>
 	}
 	
-	public let fetchRequest: NSFetchRequest<Result>
+	public let fetchRequest: NSFetchRequest<FetchRequestResult>
 	
-	public func fetchedResultsController(sectionName: PropertyDescriptionConvertible? = nil, cacheName: String? = nil) -> NSFetchedResultsController<Result> {
+	public func fetchedResultsController(sectionName: PropertyDescriptionConvertible? = nil, cacheName: String? = nil) -> NSFetchedResultsController<FetchRequestResult> {
 		return NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: sectionName?.name, cacheName: cacheName)
 	}
 	
@@ -169,16 +172,118 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 		return self
 	}
 	
-	public func select(_ what: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary> {
+	public func select(_ what: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary, NSDictionary> {
 		fetchRequest.propertiesToFetch = what.map{$0.propertyDescription(for: .self, context: context)} + (fetchRequest.propertiesToFetch ?? [])
 		fetchRequest.resultType = .dictionaryResultType
-		return Request<Entity, NSDictionary>(self)
+		return Request<Entity, NSDictionary, NSDictionary>(self)
+	}
+
+	public func select<A: TypedPropertyDescriptionConvertible>(_ what: (A)) -> Request<Entity, (A.Element?), NSDictionary> {
+		let a = what.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?), NSDictionary>(self) { $0[a.name] as? A.Element }
+	}
+
+	public func select<
+		A: TypedPropertyDescriptionConvertible,
+		B: TypedPropertyDescriptionConvertible>
+		(_ what: (A, B)) -> Request<Entity, (A.Element?, B.Element?), NSDictionary> {
+			
+		let a = what.0.propertyDescription(for: .self, context: context)
+		let b = what.1.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a, b] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?, B.Element?), NSDictionary>(self) { ($0[a.name] as? A.Element,
+																				$0[b.name] as? B.Element) }
+	}
+
+	public func select<
+		A: TypedPropertyDescriptionConvertible,
+		B: TypedPropertyDescriptionConvertible,
+		C: TypedPropertyDescriptionConvertible>
+		(_ what: (A, B, C)) -> Request<Entity, (A.Element?, B.Element?, C.Element?), NSDictionary> {
+		
+		let a = what.0.propertyDescription(for: .self, context: context)
+		let b = what.1.propertyDescription(for: .self, context: context)
+		let c = what.2.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a, b, c] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?, B.Element?, C.Element?), NSDictionary>(self) { ($0[a.name] as? A.Element,
+																							$0[b.name] as? B.Element,
+																							$0[c.name] as? C.Element) }
+	}
+
+	public func select<
+		A: TypedPropertyDescriptionConvertible,
+		B: TypedPropertyDescriptionConvertible,
+		C: TypedPropertyDescriptionConvertible,
+		D: TypedPropertyDescriptionConvertible>
+		(_ what: (A, B, C, D)) -> Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?), NSDictionary> {
+		
+		let a = what.0.propertyDescription(for: .self, context: context)
+		let b = what.1.propertyDescription(for: .self, context: context)
+		let c = what.2.propertyDescription(for: .self, context: context)
+		let d = what.3.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a, b, c, d] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?), NSDictionary>(self) { ($0[a.name] as? A.Element,
+																										$0[b.name] as? B.Element,
+																										$0[c.name] as? C.Element,
+																										$0[d.name] as? D.Element) }
+	}
+
+	public func select<
+		A: TypedPropertyDescriptionConvertible,
+		B: TypedPropertyDescriptionConvertible,
+		C: TypedPropertyDescriptionConvertible,
+		D: TypedPropertyDescriptionConvertible,
+		E: TypedPropertyDescriptionConvertible>
+		(_ what: (A, B, C, D, E)) -> Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?, E.Element?), NSDictionary> {
+		
+		let a = what.0.propertyDescription(for: .self, context: context)
+		let b = what.1.propertyDescription(for: .self, context: context)
+		let c = what.2.propertyDescription(for: .self, context: context)
+		let d = what.3.propertyDescription(for: .self, context: context)
+		let e = what.4.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a, b, c, d, e] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?, E.Element?), NSDictionary>(self) { ($0[a.name] as? A.Element,
+																													$0[b.name] as? B.Element,
+																													$0[c.name] as? C.Element,
+																													$0[d.name] as? D.Element,
+																													$0[e.name] as? E.Element) }
+	}
+
+	public func select<
+		A: TypedPropertyDescriptionConvertible,
+		B: TypedPropertyDescriptionConvertible,
+		C: TypedPropertyDescriptionConvertible,
+		D: TypedPropertyDescriptionConvertible,
+		E: TypedPropertyDescriptionConvertible,
+		F: TypedPropertyDescriptionConvertible>
+		(_ what: (A, B, C, D, E, F)) -> Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?, E.Element?, F.Element?), NSDictionary> {
+		
+		let a = what.0.propertyDescription(for: .self, context: context)
+		let b = what.1.propertyDescription(for: .self, context: context)
+		let c = what.2.propertyDescription(for: .self, context: context)
+		let d = what.3.propertyDescription(for: .self, context: context)
+		let e = what.4.propertyDescription(for: .self, context: context)
+		let f = what.5.propertyDescription(for: .self, context: context)
+		fetchRequest.propertiesToFetch = [a, b, c, d, e, f] + (fetchRequest.propertiesToFetch ?? [])
+		fetchRequest.resultType = .dictionaryResultType
+		return Request<Entity, (A.Element?, B.Element?, C.Element?, D.Element?, E.Element?, F.Element?), NSDictionary>(self) { ($0[a.name] as? A.Element,
+																																$0[b.name] as? B.Element,
+																																$0[c.name] as? C.Element,
+																																$0[d.name] as? D.Element,
+																																$0[d.name] as? E.Element,
+																																$0[f.name] as? F.Element) }
 	}
 	
-	public func group(by expression: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary> {
+	public func group(by expression: [PropertyDescriptionConvertible]) -> Request<Entity, NSDictionary, NSDictionary> {
 		fetchRequest.propertiesToGroupBy = expression.map{$0.propertyDescription(for: .self, context: context)} + (fetchRequest.propertiesToGroupBy ?? [])
 		fetchRequest.resultType = .dictionaryResultType
-		return Request<Entity, NSDictionary>(self)
+		return Request<Entity, NSDictionary, NSDictionary>(self)
 	}
 	
 	public func having(_ predicate: Predictable ) -> Request {
@@ -191,6 +296,42 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 		return self
 	}
 	
+	
+	public func count() throws -> Int {
+		fetchRequest.resultType = .countResultType
+		return try context.fetch(fetchRequest as! NSFetchRequest<NSNumber>).first as? Int ?? 0
+	}
+	
+	
+	public var objectIDs: Request<Entity, NSManagedObjectID, NSManagedObjectID> {
+		fetchRequest.resultType = .managedObjectIDResultType
+		return Request<Entity, NSManagedObjectID, NSManagedObjectID>(self)
+	}
+	
+	public func all() throws -> [Result] {
+		return try context.fetch(fetchRequest).map(transform!)
+	}
+	
+	public func first() throws -> Result? {
+		fetchRequest.fetchLimit = 1
+		return try context.fetch(fetchRequest).first.map{transform!($0)}
+	}
+	
+	public func subrange(_ bounds: Range<Int>) throws -> [Result] {
+		fetchRequest.fetchLimit = bounds.count
+		fetchRequest.fetchOffset = bounds.lowerBound
+		return try context.fetch(fetchRequest).map(transform!)
+	}
+	
+	public func subrange(_ bounds: ClosedRange<Int>) throws -> [Result] {
+		fetchRequest.fetchLimit = bounds.count
+		fetchRequest.fetchOffset = bounds.lowerBound
+		return try context.fetch(fetchRequest).map(transform!)
+	}
+
+}
+
+extension Request where Result == FetchRequestResult {
 	public func all() throws -> [Result] {
 		return try context.fetch(fetchRequest)
 	}
@@ -199,12 +340,7 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 		fetchRequest.fetchLimit = 1
 		return try context.fetch(fetchRequest).first
 	}
-	
-	public func count() throws -> Int {
-		fetchRequest.resultType = .countResultType
-		return try context.fetch(fetchRequest as! NSFetchRequest<NSNumber>).first as? Int ?? 0
-	}
-	
+
 	public func subrange(_ bounds: Range<Int>) throws -> [Result] {
 		fetchRequest.fetchLimit = bounds.count
 		fetchRequest.fetchOffset = bounds.lowerBound
@@ -215,11 +351,6 @@ public struct Request<Entity: NSManagedObject, Result: NSFetchRequestResult> {
 		fetchRequest.fetchLimit = bounds.count
 		fetchRequest.fetchOffset = bounds.lowerBound
 		return try context.fetch(fetchRequest)
-	}
-	
-	public var objectIDs: Request<Entity, NSManagedObjectID> {
-		fetchRequest.resultType = .managedObjectIDResultType
-		return Request<Entity, NSManagedObjectID>(self)
 	}
 }
 
@@ -241,6 +372,10 @@ public protocol StringExpressible: Expressible {}
 public protocol PropertyDescriptionConvertible {
 	func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription
 	var name: String {get}
+}
+
+public protocol TypedPropertyDescriptionConvertible: PropertyDescriptionConvertible {
+	associatedtype Element
 }
 
 public protocol CollectionExpressible: Expressible {}
@@ -281,47 +416,49 @@ fileprivate struct FunctionExpression: NumericExpressible {
 	var comparisonOptions: NSComparisonPredicate.Options { return arguments[0].comparisonOptions }
 }
 
-fileprivate struct CastExpression<T>: Expressible, PropertyDescriptionConvertible {
+public struct CastExpression<T>: Expressible, TypedPropertyDescriptionConvertible {
+	public typealias Element = T
 	var base: Expressible
-	var name: String
-	func expression(for operand: Operand) -> NSExpression { return base.expression(for: operand) }
-	var comparisonModifier: NSComparisonPredicate.Modifier { return base.comparisonModifier }
-	var comparisonOptions: NSComparisonPredicate.Options { return base.comparisonOptions }
+	public var name: String
+	public func expression(for operand: Operand) -> NSExpression { return base.expression(for: operand) }
+	public var comparisonModifier: NSComparisonPredicate.Modifier { return base.comparisonModifier }
+	public var comparisonOptions: NSComparisonPredicate.Options { return base.comparisonOptions }
 	
-	func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
+	public func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
 		let expressionDescription = NSExpressionDescription()
 		expressionDescription.name = name
 		expressionDescription.expression = expression(for: operand)
+		
 		switch T.self {
-		case is Int16.Type:
+		case is Int16.Type, is Int16?.Type:
 			expressionDescription.expressionResultType = .integer16AttributeType
-		case is Int32.Type, is Int.Type:
+		case is Int32.Type, is Int.Type, is Int32?.Type, is Int?.Type:
 			expressionDescription.expressionResultType = .integer32AttributeType
-		case is Int64.Type:
+		case is Int64.Type, is Int64?.Type:
 			expressionDescription.expressionResultType = .integer64AttributeType
-		case is Decimal.Type:
+		case is Decimal.Type, is Decimal?.Type:
 			expressionDescription.expressionResultType = .decimalAttributeType
-		case is Double.Type:
+		case is Double.Type, is Double?.Type:
 			expressionDescription.expressionResultType = .doubleAttributeType
-		case is Float.Type:
+		case is Float.Type, is Float?.Type:
 			expressionDescription.expressionResultType = .floatAttributeType
-		case is String.Type:
+		case is String.Type, is String?.Type:
 			expressionDescription.expressionResultType = .stringAttributeType
-		case is Bool.Type:
+		case is Bool.Type, is Bool?.Type:
 			expressionDescription.expressionResultType = .booleanAttributeType
-		case is Date.Type:
+		case is Date.Type, is Date?.Type:
 			expressionDescription.expressionResultType = .dateAttributeType
-		case is Data.Type:
+		case is Data.Type, is Data?.Type:
 			expressionDescription.expressionResultType = .binaryDataAttributeType
-		case is NSManagedObjectID.Type:
+		case is NSManagedObjectID.Type, is NSManagedObjectID?.Type:
 			expressionDescription.expressionResultType = .objectIDAttributeType
-		case is URL.Type:
+		case is URL.Type, is URL?.Type:
 			if #available(iOS 11.0, *) {
 				expressionDescription.expressionResultType = .URIAttributeType
 			} else {
 				expressionDescription.expressionResultType = .transformableAttributeType
 			}
-		case is UUID.Type:
+		case is UUID.Type, is UUID?.Type:
 			if #available(iOS 11.0, *) {
 				expressionDescription.expressionResultType = .UUIDAttributeType
 			} else {
@@ -392,9 +529,11 @@ extension KeyPath: Expressible {
 	var name: String { return expression(for: .self).keyPath }
 }
 
-extension KeyPath: PropertyDescriptionConvertible where Root: NSManagedObject {
+extension KeyPath: PropertyDescriptionConvertible, TypedPropertyDescriptionConvertible where Root: NSManagedObject {
+	public typealias Element = Value
+	
 	public func propertyDescription(for operand: Operand, context: NSManagedObjectContext) -> NSPropertyDescription {
-		return context.entity(for: Root.self).propertiesByName[expression(for: operand).keyPath]!
+		return context.entity(for: Root.self).propertiesByName[expression(for: operand).keyPath] ?? self.as(Element.self, name: name).propertyDescription(for: operand, context: context)
 	}
 	
 	public var name: String {

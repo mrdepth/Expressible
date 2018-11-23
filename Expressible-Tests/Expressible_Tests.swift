@@ -46,7 +46,7 @@ class Expressible_Tests: XCTestCase {
 		XCTAssertEqual(result1, result2)
 	}
 
-	func testSelect() {
+	func testSelect1() {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
 			.from(City.self)
@@ -78,6 +78,42 @@ class Expressible_Tests: XCTestCase {
 		let result2 = try! context.fetch(request)
 		
 		XCTAssertEqual(result1, result2)
+	}
+	
+	func testSelect2() {
+		let context = persistentContainer.viewContext
+		let result1 = try! context
+			.from(City.self)
+			.group(by: [(\City.province?.name).as(String.self, name: "province")])
+			.having(\City.province?.country?.name == "Belarus")
+			.select((
+				(\City.province?.name),
+				(\City.population).sum.as(Int.self, name: "population")
+				))
+			.all()
+		
+		let request = NSFetchRequest<NSDictionary>(entityName: "City")
+		request.havingPredicate = NSPredicate(format: "province.country.name == %@", "Belarus")
+		request.resultType = .dictionaryResultType
+		
+		let province = NSExpressionDescription()
+		province.expression = NSExpression(format: "province.name")
+		province.expressionResultType = .stringAttributeType
+		province.name = "province"
+		
+		let population = NSExpressionDescription()
+		population.expression = NSExpression(format: "sum:(population)")
+		population.expressionResultType = .integer32AttributeType
+		population.name = "population"
+		
+		request.propertiesToFetch = [province, population]
+		request.propertiesToGroupBy = [province]
+		
+		let result2 = try! context.fetch(request).map {
+			($0["province"] as? String, $0["population"] as? Int)
+		}
+		
+		XCTAssertTrue(zip(result1, result2).allSatisfy({$0.0 == $1.0 && $0.1 == $1.1}))
 	}
 
 	func testSubquery() {
