@@ -86,10 +86,43 @@ class Expressible_Tests: XCTestCase {
 			.from(City.self)
 			.group(by: [(\City.province?.name).as(String.self, name: "province")])
 			.having(\City.province?.country?.name == "Belarus")
+			.select(
+				(\City.population).sum.as(Int.self, name: "population")
+				)
+			.first()
+		
+		let request = NSFetchRequest<NSDictionary>(entityName: "City")
+		request.havingPredicate = NSPredicate(format: "province.country.name == %@", "Belarus")
+		request.resultType = .dictionaryResultType
+		
+		let province = NSExpressionDescription()
+		province.expression = NSExpression(format: "province.name")
+		province.expressionResultType = .stringAttributeType
+		province.name = "province"
+
+		let population = NSExpressionDescription()
+		population.expression = NSExpression(format: "sum:(population)")
+		population.expressionResultType = .integer32AttributeType
+		population.name = "population"
+		
+		request.propertiesToFetch = [population]
+		request.propertiesToGroupBy = [province]
+		
+		let result2 = try! context.fetch(request).first?["population"] as? Int
+		
+		XCTAssertEqual(result1, result2)
+	}
+
+	func testSelect3() {
+		let context = persistentContainer.viewContext
+		let result1 = try! context
+			.from(City.self)
+			.group(by: [(\City.province?.name).as(String.self, name: "province")])
+			.having(\City.province?.country?.name == "Belarus")
 			.select((
 				(\City.province?.name),
 				(\City.population).sum.as(Int.self, name: "population")
-				))
+			))
 			.all()
 		
 		let request = NSFetchRequest<NSDictionary>(entityName: "City")
@@ -115,7 +148,7 @@ class Expressible_Tests: XCTestCase {
 		
 		XCTAssertTrue(zip(result1, result2).allSatisfy({$0.0 == $1.0 && $0.1 == $1.1}))
 	}
-
+	
 	func testSubquery() {
 		let context = persistentContainer.viewContext
 		
@@ -203,6 +236,48 @@ class Expressible_Tests: XCTestCase {
 		XCTAssertEqual(result1.sectionNameKeyPath, result2.sectionNameKeyPath)
 	}
 
+	func testDelete() {
+		let country = Country(context: persistentContainer.viewContext)
+		country.name = "Test"
+		let provinces = ["TestProvince1", "TestProvince2", "TestProvince3"].map { provinceName -> Province in
+			let province = Province(context: persistentContainer.viewContext)
+			province.name = provinceName
+			province.country = country
+			for cityName in ["TestCity1", "TestCity2", "TestCity3"] {
+				let city = City(context: persistentContainer.viewContext)
+				city.province = province
+				city.name = "\(provinceName)_\(cityName)"
+			}
+			return province
+		}
+		
+		try! persistentContainer.viewContext.save()
+		
+		try! persistentContainer.viewContext
+			.from(City.self)
+			.filter(\City.province?.country == country)
+			.delete()
+		
+		let result1 = try! persistentContainer.viewContext
+			.from(City.self)
+			.filter(\City.province?.country == country)
+			.count()
+
+		XCTAssertEqual(result1, 0)
+
+		try! persistentContainer.viewContext
+			.from(Country.self)
+			.filter(\Country.name == "Test")
+			.delete()
+		
+		XCTAssertEqual(country.isDeleted, true)
+		XCTAssertTrue(provinces.allSatisfy({$0.isDeleted == true}))
+		
+		try! persistentContainer.viewContext.save()
+
+		XCTAssertEqual(country.isFault, true)
+		XCTAssertTrue(provinces.allSatisfy({$0.isFault == true}))
+	}
 	
 	lazy var persistentContainer: NSPersistentContainer = {
 		let model = NSManagedObjectModel(contentsOf: Bundle(for: type(of: self)).url(forResource: "Example", withExtension: "momd")!)!

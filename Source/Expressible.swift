@@ -316,7 +316,17 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		fetchRequest.fetchLimit = 1
 		return try context.fetch(fetchRequest).first.map{transform!($0)}
 	}
-	
+
+	public func delete() throws -> Void {
+		let request = NSBatchDeleteRequest(fetchRequest: fetchRequest as! NSFetchRequest<NSFetchRequestResult>)
+		request.resultType = .resultTypeObjectIDs
+		
+		guard let result = try context.execute(request) as? NSBatchDeleteResult,
+			let objectIDs = result.result as? [NSManagedObjectID] else {return}
+
+		let changes = [NSDeletedObjectsKey: objectIDs]
+		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])	}
+
 	public func subrange(_ bounds: Range<Int>) throws -> [Result] {
 		fetchRequest.fetchLimit = bounds.count
 		fetchRequest.fetchOffset = bounds.lowerBound
