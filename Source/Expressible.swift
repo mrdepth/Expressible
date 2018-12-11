@@ -325,7 +325,8 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 			let objectIDs = result.result as? [NSManagedObjectID] else {return}
 
 		let changes = [NSDeletedObjectsKey: objectIDs]
-		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])	}
+		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])
+	}
 
 	public func subrange(_ bounds: Range<Int>) throws -> [Result] {
 		fetchRequest.fetchLimit = bounds.count
