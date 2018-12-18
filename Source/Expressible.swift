@@ -368,6 +368,34 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		return try context.fetch(fetchRequest).map(transform!)
 	}
 
+	public func update<T: TypedPropertyDescriptionConvertible>(_ property: T, to value: T.Element) -> UpdateRequest {
+		return UpdateRequest(context: context, entity: entity, predicate: predicate, updates: [:]).update(property, to: value)
+	}
+}
+
+public struct UpdateRequest {
+	fileprivate var context: NSManagedObjectContext
+	fileprivate var entity: NSEntityDescription
+	fileprivate var predicate: Predictable?
+	fileprivate var updates: [AnyHashable: Any]
+	
+	public func update<T: TypedPropertyDescriptionConvertible>(_ property: T, to value: T.Element) -> UpdateRequest {
+		var updates = self.updates
+		updates[property.propertyDescription(for: .self, context: context).name] = value
+		return UpdateRequest(context: context, entity: entity, predicate: predicate, updates: updates)
+	}
+	
+	public func execute() throws {
+		let request = NSBatchUpdateRequest(entity: entity)
+		request.predicate = predicate?.predicate(for: .self)
+		request.propertiesToUpdate = updates
+		request.resultType = .updatedObjectIDsResultType
+		guard let result = try context.execute(request) as? NSBatchUpdateResult,
+			let objectIDs = result.result as? [NSManagedObjectID] else {return}
+		
+		let changes = [NSUpdatedObjectsKey: objectIDs]
+		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])
+	}
 }
 
 extension Request where Result == FetchRequestResult {

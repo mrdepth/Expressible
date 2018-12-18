@@ -279,8 +279,55 @@ class Expressible_Tests: XCTestCase {
 		XCTAssertTrue(provinces.allSatisfy({$0.isFault == true}))
 	}
 	
+	func testUpdate() {
+		let country = Country(context: persistentContainer.viewContext)
+		country.name = "TestUpdate"
+
+		let province = Province(context: persistentContainer.viewContext)
+		province.name = "TestUpdate_Province1"
+		province.country = country
+		
+		let cities = [("City1", 100), ("City2", 200), ("City1", 300)].map { i -> City in
+			let city = City(context: persistentContainer.viewContext)
+			city.province = province
+			city.name = "\(province.name!)_\(i.0)"
+			city.population = Int32(i.1)
+			return city
+		}
+
+		try! persistentContainer.viewContext.save()
+
+		try! persistentContainer.viewContext
+			.from(City.self)
+			.filter((\City.name).beginsWith("TestUpdate"))
+			.update(\City.population, to: 1000)
+			.execute()
+		
+		XCTAssertEqual(cities.map{$0.population}, [1000, 1000, 1000])
+	}
+	
+	static var persistentContainer: NSPersistentContainer = {
+		let model = NSManagedObjectModel(contentsOf: Bundle(for: Expressible_Tests.self).url(forResource: "Example", withExtension: "momd")!)!
+		let container = NSPersistentContainer(name: "Example", managedObjectModel: model)
+		
+		if let url = container.persistentStoreDescriptions.first?.url, FileManager.default.fileExists(atPath: url.path) {
+			try? FileManager.default.removeItem(at: url)
+		}
+		
+		container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+			
+			if let error = error as NSError? {
+				fatalError("Unresolved error \(error), \(error.userInfo)")
+			}
+		})
+		
+		seed(viewContext: container.viewContext)
+		return container
+	}()
+	
 	lazy var persistentContainer: NSPersistentContainer = {
-		let model = NSManagedObjectModel(contentsOf: Bundle(for: type(of: self)).url(forResource: "Example", withExtension: "momd")!)!
+		return Expressible_Tests.persistentContainer
+/*		let model = NSManagedObjectModel(contentsOf: Bundle(for: type(of: self)).url(forResource: "Example", withExtension: "momd")!)!
 		let container = NSPersistentContainer(name: "Example", managedObjectModel: model)
 		
 		var needsSeed = true
@@ -299,7 +346,7 @@ class Expressible_Tests: XCTestCase {
 			seed(viewContext: container.viewContext)
 		}
 		
-		return container
+		return container*/
 	}()
 	
 	func saveContext () {
@@ -316,9 +363,9 @@ class Expressible_Tests: XCTestCase {
 		}
 	}
 	
-	func seed(viewContext: NSManagedObjectContext) {
+	static func seed(viewContext: NSManagedObjectContext) {
 		
-		let s = try! String(contentsOf: Bundle(for: type(of: self)).url(forResource: "worldcities", withExtension: "csv")!)
+		let s = try! String(contentsOf: Bundle(for: Expressible_Tests.self).url(forResource: "worldcities", withExtension: "csv")!)
 		var columnsMap: [String: Int]?
 		var countries = [String: Country]()
 		var provinces = [String: Province]()
@@ -359,7 +406,7 @@ class Expressible_Tests: XCTestCase {
 		try? viewContext.save()
 	}
 	
-	func columns(from csv: String) -> [String] {
+	static func columns(from csv: String) -> [String] {
 		var result = [String]()
 		var i = csv.startIndex
 		
