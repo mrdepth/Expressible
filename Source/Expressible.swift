@@ -161,7 +161,7 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		resultType = other.resultType
 	}
 	
-	var fetchRequest: NSFetchRequest<FetchRequestResult> {
+	public var fetchRequest: NSFetchRequest<FetchRequestResult> {
 		let request = NSFetchRequest<FetchRequestResult>()
 		request.entity = entity
 		request.resultType = resultType
@@ -179,13 +179,13 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 	}
 	
 	public func filter(_ predicate: Predictable ) -> Request {
-		var request = Request(self)
+		var request = self
 		request.predicate = self.predicate.map{$0 && predicate} ?? predicate
 		return request
 	}
 	
 	public func sort<Root, Value>(by keyPath: KeyPath<Root, Value>, ascending: Bool) -> Request {
-		var request = Request(self)
+		var request = self
 		request.sortDescriptors = (request.sortDescriptors ?? []) + [NSSortDescriptor(keyPath: keyPath, ascending: ascending)]
 		return request
 	}
