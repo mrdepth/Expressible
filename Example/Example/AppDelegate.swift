@@ -36,7 +36,7 @@ extension AppDelegate {
 				.filter(\City.population > 1_000_000)
 				.sort(by: \City.population, ascending: false)
 				.sort(by: \City.name, ascending: true)
-				.all()
+				.fetch()
 			
 			//Equivalent to:
 			let request = NSFetchRequest<City>(entityName: "City")
@@ -62,7 +62,7 @@ extension AppDelegate {
 					(\City.province?.name).as(String.self, name: "province"),
 					(\City.population).sum.as(Int.self, name: "population")
 					])
-				.all()
+				.fetch()
 			
 			//Equivalent to:
 			let request = NSFetchRequest<NSDictionary>(entityName: "City")
@@ -98,7 +98,7 @@ extension AppDelegate {
 			let result1 = try context
 				.from(Country.self)
 				.filter((\Country.provinces).subquery((\Province.cities).any(\City.population) > 10_000_000).count != 0)
-				.all()
+				.fetch()
 
 			
 			//Equivalent to:

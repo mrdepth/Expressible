@@ -36,7 +36,7 @@ class Expressible_Tests: XCTestCase {
 			.filter(\City.population > 1_000_000)
 			.sort(by: \City.population, ascending: false)
 			.sort(by: \City.name, ascending: true)
-			.all()
+			.fetch()
 		
 		let request = NSFetchRequest<City>(entityName: "City")
 		request.predicate = NSPredicate(format: "population > 1000000")
@@ -56,7 +56,7 @@ class Expressible_Tests: XCTestCase {
 				(\City.province?.name).as(String.self, name: "province"),
 				(\City.population).sum.as(Int.self, name: "population")
 				])
-			.all()
+			.fetch()
 		
 		let request = NSFetchRequest<NSDictionary>(entityName: "City")
 		request.havingPredicate = NSPredicate(format: "province.country.name == %@", "Belarus")
@@ -123,7 +123,7 @@ class Expressible_Tests: XCTestCase {
 				(\City.province?.name),
 				(\City.population).sum.as(Int.self, name: "population")
 			))
-			.all()
+			.fetch()
 		
 		let request = NSFetchRequest<NSDictionary>(entityName: "City")
 		request.havingPredicate = NSPredicate(format: "province.country.name == %@", "Belarus")
@@ -149,13 +149,31 @@ class Expressible_Tests: XCTestCase {
 		XCTAssertTrue(zip(result1, result2).allSatisfy({$0.0 == $1.0 && $0.1 == $1.1}))
 	}
 	
+	func testSubrange() {
+		let context = persistentContainer.viewContext
+		let result1 = try! context
+			.from(City.self)
+			.sort(by: \City.population, ascending: false)
+			.sort(by: \City.name, ascending: true)
+			.subrange(10..<20)
+			.fetch()
+		
+		let request = NSFetchRequest<City>(entityName: "City")
+		request.sortDescriptors = [NSSortDescriptor(key: "population", ascending: false), NSSortDescriptor(key: "name", ascending: true)]
+		request.fetchOffset = 10
+		request.fetchLimit = 10
+		let result2 = try! context.fetch(request)
+		
+		XCTAssertEqual(result1, result2)
+	}
+	
 	func testSubquery() {
 		let context = persistentContainer.viewContext
 		
 		let result1 = try! context
 			.from(Country.self)
 			.filter((\Country.provinces).subquery((\Province.cities).any(\City.population) > 10_000_000).count != 0)
-			.all()
+			.fetch()
 		
 		
 		let request = NSFetchRequest<Country>(entityName: "Country")
@@ -171,17 +189,17 @@ class Expressible_Tests: XCTestCase {
 		let result1 = try! context
 			.from(Country.self)
 			.filter((\Country.name).in(["Belarus", "United States of America"]))
-			.all()
+			.fetch()
 
 		let result2 = try! context
 			.from(Country.self)
 			.filter((\Country.name).in(Set(["Belarus", "United States of America"])))
-			.all()
+			.fetch()
 
 		let result3 = try! context
 			.from(Country.self)
 			.filter((\Country.name).in(Set(["Belarus", "United States of America"]) as NSSet))
-			.all()
+			.fetch()
 
 		
 		let request = NSFetchRequest<Country>(entityName: "Country")
@@ -258,13 +276,15 @@ class Expressible_Tests: XCTestCase {
 			.filter(\City.province?.country == country)
 			.delete()
 		
+		try! persistentContainer.viewContext.save()
+
 		let result1 = try! persistentContainer.viewContext
 			.from(City.self)
 			.filter(\City.province?.country == country)
 			.count()
 
 		XCTAssertEqual(result1, 0)
-
+		
 		try! persistentContainer.viewContext
 			.from(Country.self)
 			.filter(\Country.name == "Test")
@@ -327,26 +347,6 @@ class Expressible_Tests: XCTestCase {
 	
 	lazy var persistentContainer: NSPersistentContainer = {
 		return Expressible_Tests.persistentContainer
-/*		let model = NSManagedObjectModel(contentsOf: Bundle(for: type(of: self)).url(forResource: "Example", withExtension: "momd")!)!
-		let container = NSPersistentContainer(name: "Example", managedObjectModel: model)
-		
-		var needsSeed = true
-		if let url = container.persistentStoreDescriptions.first?.url, FileManager.default.fileExists(atPath: url.path) {
-			needsSeed = false
-		}
-		
-		container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-			
-			if let error = error as NSError? {
-				fatalError("Unresolved error \(error), \(error.userInfo)")
-			}
-		})
-		
-		if needsSeed {
-			seed(viewContext: container.viewContext)
-		}
-		
-		return container*/
 	}()
 	
 	func saveContext () {
@@ -355,8 +355,6 @@ class Expressible_Tests: XCTestCase {
 			do {
 				try context.save()
 			} catch {
-				// Replace this implementation with code to handle the error appropriately.
-				// fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
 				let nserror = error as NSError
 				fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
 			}

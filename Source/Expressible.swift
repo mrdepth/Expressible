@@ -141,6 +141,7 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 	private var havingPredicate: Predictable?
 	private var entity: NSEntityDescription
 	private var resultType: NSFetchRequestResultType
+	private var range: Range<Int>?
 	
 	fileprivate init(context: NSManagedObjectContext, entity: NSEntityDescription) {
 		self.entity = entity
@@ -159,6 +160,7 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		havingPredicate = other.havingPredicate
 		entity = other.entity
 		resultType = other.resultType
+		range = other.range
 	}
 	
 	public var fetchRequest: NSFetchRequest<FetchRequestResult> {
@@ -170,7 +172,10 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		request.sortDescriptors = sortDescriptors
 		request.propertiesToFetch = propertiesToFetch?.map{$0.propertyDescription(for: .self, context: context)}
 		request.propertiesToGroupBy = propertiesToGroupBy?.map{$0.propertyDescription(for: .self, context: context)}
-
+		if let range = range {
+			request.fetchOffset = range.lowerBound
+			request.fetchLimit = range.upperBound - range.lowerBound
+		}
 		return request
 	}
 	
@@ -335,7 +340,7 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		return request
 	}
 	
-	public func all() throws -> [Result] {
+	public func fetch() throws -> [Result] {
 		return try context.fetch(fetchRequest).map(transform!)
 	}
 	
@@ -351,21 +356,22 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		
 		guard let result = try context.execute(request) as? NSBatchDeleteResult,
 			let objectIDs = result.result as? [NSManagedObjectID] else {return}
-
+		
 		let changes = [NSDeletedObjectsKey: objectIDs]
 		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])
+		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: [NSUpdatedObjectsKey: context.updatedObjects.map{$0.objectID}] as [AnyHashable: Any], into: [context])
 	}
 
-	public func subrange(_ bounds: Range<Int>) throws -> [Result] {
-		fetchRequest.fetchLimit = bounds.count
-		fetchRequest.fetchOffset = bounds.lowerBound
-		return try context.fetch(fetchRequest).map(transform!)
+	public func subrange(_ bounds: Range<Int>) throws -> Request {
+		var request = self
+		request.range = bounds
+		return request
 	}
 	
-	public func subrange(_ bounds: ClosedRange<Int>) throws -> [Result] {
-		fetchRequest.fetchLimit = bounds.count
-		fetchRequest.fetchOffset = bounds.lowerBound
-		return try context.fetch(fetchRequest).map(transform!)
+	public func subrange(_ bounds: ClosedRange<Int>) throws -> Request {
+		var request = self
+		request.range = bounds.lowerBound..<(bounds.upperBound + 1)
+		return request
 	}
 
 	public func update<T: TypedPropertyDescriptionConvertible>(_ property: T, to value: T.Element) -> UpdateRequest {
@@ -399,7 +405,7 @@ public struct UpdateRequest {
 }
 
 extension Request where Result == FetchRequestResult {
-	public func all() throws -> [Result] {
+	public func fetch() throws -> [Result] {
 		return try context.fetch(fetchRequest)
 	}
 	
