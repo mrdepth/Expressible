@@ -350,16 +350,18 @@ public struct Request<Entity: NSManagedObject, Result, FetchRequestResult: NSFet
 		return try context.fetch(fetchRequest).first.map{transform!($0)}
 	}
 
-	public func delete() throws -> Void {
+	@discardableResult
+	public func delete() throws -> [NSManagedObjectID] {
 		let request = NSBatchDeleteRequest(fetchRequest: fetchRequest as! NSFetchRequest<NSFetchRequestResult>)
 		request.resultType = .resultTypeObjectIDs
 		
 		guard let result = try context.execute(request) as? NSBatchDeleteResult,
-			let objectIDs = result.result as? [NSManagedObjectID] else {return}
+			let objectIDs = result.result as? [NSManagedObjectID] else {return []}
 		
 		let changes = [NSDeletedObjectsKey: objectIDs]
 		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])
 		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: [NSUpdatedObjectsKey: context.updatedObjects.map{$0.objectID}] as [AnyHashable: Any], into: [context])
+		return objectIDs
 	}
 
 	public func subrange(_ bounds: Range<Int>) throws -> Request {
@@ -391,16 +393,18 @@ public struct UpdateRequest {
 		return UpdateRequest(context: context, entity: entity, predicate: predicate, updates: updates)
 	}
 	
-	public func execute() throws {
+	@discardableResult
+	public func perform() throws -> [NSManagedObjectID] {
 		let request = NSBatchUpdateRequest(entity: entity)
 		request.predicate = predicate?.predicate(for: .self)
 		request.propertiesToUpdate = updates
 		request.resultType = .updatedObjectIDsResultType
 		guard let result = try context.execute(request) as? NSBatchUpdateResult,
-			let objectIDs = result.result as? [NSManagedObjectID] else {return}
+			let objectIDs = result.result as? [NSManagedObjectID] else {return []}
 		
 		let changes = [NSUpdatedObjectsKey: objectIDs]
 		NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes as [AnyHashable: Any], into: [context])
+		return objectIDs
 	}
 }
 

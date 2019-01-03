@@ -321,7 +321,7 @@ class Expressible_Tests: XCTestCase {
 			.from(City.self)
 			.filter((\City.name).beginsWith("TestUpdate"))
 			.update(\City.population, to: 1000)
-			.execute()
+			.perform()
 		
 		XCTAssertEqual(cities.map{$0.population}, [1000, 1000, 1000])
 	}
