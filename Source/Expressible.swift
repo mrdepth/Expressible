@@ -572,6 +572,12 @@ public protocol Predictable {
 	func predicate(for operand: Operand) -> NSPredicate
 }
 
+extension Predictable {
+    public func predicate() -> NSPredicate {
+        return self.predicate(for: .self)
+    }
+}
+
 fileprivate struct ComparisonPredicate: Predictable {
 	var lhs: Expressible
 	var rhs: Expressible
