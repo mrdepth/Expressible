@@ -552,7 +552,7 @@ fileprivate struct Null: Expressible {
 	func expression(for operand: Operand) -> NSExpression { return NSExpression(forConstantValue: nil) }
 }
 
-public let `Self`: Expressible = EvaluatedObject()
+public let _self: Expressible = EvaluatedObject()
 
 fileprivate struct EvaluatedObject: Expressible {
 	func expression(for operand: Operand) -> NSExpression { return NSExpression.expressionForEvaluatedObject() }

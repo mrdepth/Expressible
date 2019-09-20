@@ -218,8 +218,8 @@ class Expressible_Tests: XCTestCase {
 		
 		let result1 = try! context
 			.from(Country.self)
-			.filter(Self == country)
-			.select([Self.as(NSManagedObjectID.self, name: "self")])
+			.filter(_self == country)
+			.select([_self.as(NSManagedObjectID.self, name: "self")])
 			.first()
 		
 		let request = NSFetchRequest<NSDictionary>(entityName: "Country")
