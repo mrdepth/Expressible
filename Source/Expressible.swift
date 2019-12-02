@@ -97,7 +97,7 @@ extension Int64: NumericExpressible {}
 extension UInt64: NumericExpressible {}
 extension Double: NumericExpressible {}
 extension Float: NumericExpressible {}
-extension NSDecimalNumber: NumericExpressible {}
+extension NSNumber: NumericExpressible {}
 extension Decimal: NumericExpressible {}
 extension Bool: Expressible {}
 extension String: StringExpressible {}
