@@ -33,7 +33,7 @@ class Expressible_Tests: XCTestCase {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
 			.from(City.self)
-			.filter(\City.population > 1_000_000)
+            .filter(/\City.population > 1_000_000)
 			.sort(by: \City.population, ascending: false)
 			.sort(by: \City.name, ascending: true)
 			.fetch()
@@ -50,11 +50,11 @@ class Expressible_Tests: XCTestCase {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
 			.from(City.self)
-			.group(by: [(\City.province?.name).as(String.self, name: "province")])
-			.having(\City.province?.country?.name == "Belarus")
+			.group(by: [(/\City.province?.name).as(String.self, name: "province")])
+			.having(/\City.province?.country?.name == "Belarus")
 			.select([
-				(\City.province?.name).as(String.self, name: "province"),
-				(\City.population).sum.as(Int.self, name: "population")
+				(/\City.province?.name).as(String.self, name: "province"),
+				(/\City.population).sum.as(Int.self, name: "population")
 				])
 			.fetch()
 		
@@ -84,10 +84,10 @@ class Expressible_Tests: XCTestCase {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
 			.from(City.self)
-			.group(by: [(\City.province?.name).as(String.self, name: "province")])
-			.having(\City.province?.country?.name == "Belarus")
+			.group(by: [(/\City.province?.name).as(String.self, name: "province")])
+			.having((/\City.province?.country?.name) == "Belarus")
 			.select(
-				(\City.population).sum.as(Int.self, name: "population")
+				(/\City.population).sum.as(Int.self, name: "population")
 				)
 			.first()
 		
@@ -117,11 +117,11 @@ class Expressible_Tests: XCTestCase {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
 			.from(City.self)
-			.group(by: [(\City.province?.name).as(String.self, name: "province")])
-			.having(\City.province?.country?.name == "Belarus")
+			.group(by: [(/\City.province?.name).as(String.self, name: "province")])
+			.having((/\City.province?.country?.name) == "Belarus")
 			.select((
-				(\City.province?.name),
-				(\City.population).sum.as(Int.self, name: "population")
+				/\City.province?.name,
+				(/\City.population).sum.as(Int.self, name: "population")
 			))
 			.fetch()
 		
@@ -149,6 +149,23 @@ class Expressible_Tests: XCTestCase {
 		XCTAssertTrue(zip(result1, result2).allSatisfy({$0.0 == $1.0 && $0.1 == $1.1}))
 	}
 	
+    func testSelect4() {
+        let context = persistentContainer.viewContext
+        let result1 = try! context
+            .from(City.self)
+            .filter((/\City.name).caseInsensitive.contains("minsk") && (/\City.province?.country?.name).contains("belarus"))
+            .sort(by: \City.population, ascending: false)
+            .sort(by: \City.name, ascending: true)
+            .fetch()
+        
+        let request = NSFetchRequest<City>(entityName: "City")
+        request.predicate = NSPredicate(format: "name CONTAINS[c] %@ AND province.country.name CONTAINS %@", "minsk", "belarus")
+        request.sortDescriptors = [NSSortDescriptor(key: "population", ascending: false), NSSortDescriptor(key: "name", ascending: true)]
+        let result2 = try! context.fetch(request)
+        
+        XCTAssertEqual(result1, result2)
+    }
+    
 	func testSubrange() {
 		let context = persistentContainer.viewContext
 		let result1 = try! context
@@ -172,7 +189,7 @@ class Expressible_Tests: XCTestCase {
 		
 		let result1 = try! context
 			.from(Country.self)
-			.filter((\Country.provinces).subquery((\Province.cities).any(\City.population) > 10_000_000).count != 0)
+            .filter((/\Country.provinces).subquery((/\Province.cities).any(\City.population) > 10_000_000).count != 0)
 			.fetch()
 		
 		
@@ -188,17 +205,17 @@ class Expressible_Tests: XCTestCase {
 
 		let result1 = try! context
 			.from(Country.self)
-			.filter((\Country.name).in(["Belarus", "United States of America"]))
+            .filter((/\Country.name).in(["Belarus", "United States of America"]))
 			.fetch()
 
 		let result2 = try! context
 			.from(Country.self)
-			.filter((\Country.name).in(Set(["Belarus", "United States of America"])))
+			.filter((/\Country.name).in(Set(["Belarus", "United States of America"])))
 			.fetch()
 
 		let result3 = try! context
 			.from(Country.self)
-			.filter((\Country.name).in(Set(["Belarus", "United States of America"]) as NSSet))
+			.filter((/\Country.name).in(Set(["Belarus", "United States of America"]) as NSSet))
 			.fetch()
 
 		
@@ -218,8 +235,8 @@ class Expressible_Tests: XCTestCase {
 		
 		let result1 = try! context
 			.from(Country.self)
-			.filter(_self == country)
-			.select([_self.as(NSManagedObjectID.self, name: "self")])
+            .filter(/\Country.self == country)
+			.select([(/\Country.self).as(NSManagedObjectID.self, name: "self")])
 			.first()
 		
 		let request = NSFetchRequest<NSDictionary>(entityName: "Country")
@@ -244,7 +261,7 @@ class Expressible_Tests: XCTestCase {
 			.from(Province.self)
 			.sort(by: \Province.country?.name, ascending: true)
 			.sort(by: \Province.name, ascending: true)
-			.fetchedResultsController(sectionName: \Province.country?.name)
+            .fetchedResultsController(sectionName: (/\Province.country?.name))
 		
 		let request = NSFetchRequest<Province>(entityName: "Province")
 		request.sortDescriptors = [NSSortDescriptor(key: "country.name", ascending: true), NSSortDescriptor(key: "name", ascending: true)]
@@ -273,21 +290,21 @@ class Expressible_Tests: XCTestCase {
 		
 		try! persistentContainer.viewContext
 			.from(City.self)
-			.filter(\City.province?.country == country)
+			.filter(/\City.province?.country == country)
 			.delete()
 		
 		try! persistentContainer.viewContext.save()
 
 		let result1 = try! persistentContainer.viewContext
 			.from(City.self)
-			.filter(\City.province?.country == country)
+			.filter(/\City.province?.country == country)
 			.count()
 
 		XCTAssertEqual(result1, 0)
 		
 		try! persistentContainer.viewContext
 			.from(Country.self)
-			.filter(\Country.name == "Test")
+			.filter(/\Country.name == "Test")
 			.delete()
 		
 		XCTAssertEqual(country.isDeleted, true)
@@ -319,8 +336,8 @@ class Expressible_Tests: XCTestCase {
 
 		try! persistentContainer.viewContext
 			.from(City.self)
-			.filter((\City.name).beginsWith("TestUpdate"))
-			.update(\City.population, to: 1000)
+			.filter((/\City.name).beginsWith("TestUpdate"))
+			.update(/\City.population, to: 1000)
 			.perform()
 		
 		XCTAssertEqual(cities.map{$0.population}, [1000, 1000, 1000])

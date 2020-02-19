@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		1211C7552112DC1A005C5F81 /* Expressible.h in Headers */ = {isa = PBXBuildFile; fileRef = 1211C7532112DC1A005C5F81 /* Expressible.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1211C7582112DC3D005C5F81 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1211C7572112DC3D005C5F81 /* Expressible.swift */; };
 		12A8430F215392FE00570A95 /* Expressible_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A8430E215392FE00570A95 /* Expressible_Tests.swift */; };
 		12A84311215392FE00570A95 /* Expressible.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1211C7472112DBC5005C5F81 /* Expressible.framework */; };
-		12A843172153930F00570A95 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1211C7572112DC3D005C5F81 /* Expressible.swift */; };
 		12A8431B2153936800570A95 /* Example.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 12A843182153936800570A95 /* Example.xcdatamodeld */; };
 		12A8431C2153936800570A95 /* worldcities.csv in Resources */ = {isa = PBXBuildFile; fileRef = 12A8431A2153936800570A95 /* worldcities.csv */; };
+		16DBDE8E23FAD39E006B0BC3 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DBDE8D23FAD39E006B0BC3 /* Expressible.swift */; };
+		16DBDE8F23FAD3A4006B0BC3 /* Expressible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DBDE8D23FAD39E006B0BC3 /* Expressible.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,12 +30,13 @@
 		1211C7472112DBC5005C5F81 /* Expressible.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Expressible.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1211C7532112DC1A005C5F81 /* Expressible.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Expressible.h; sourceTree = "<group>"; };
 		1211C7542112DC1A005C5F81 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1211C7572112DC3D005C5F81 /* Expressible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expressible.swift; sourceTree = "<group>"; };
+		1211C7572112DC3D005C5F81 /* Expressible1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expressible1.swift; sourceTree = "<group>"; };
 		12A8430C215392FE00570A95 /* Expressible-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Expressible-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		12A8430E215392FE00570A95 /* Expressible_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Expressible_Tests.swift; sourceTree = "<group>"; };
 		12A84310215392FE00570A95 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		12A843192153936800570A95 /* Example.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Example.xcdatamodel; sourceTree = "<group>"; };
 		12A8431A2153936800570A95 /* worldcities.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = worldcities.csv; path = Example/Example/worldcities.csv; sourceTree = SOURCE_ROOT; };
+		16DBDE8D23FAD39E006B0BC3 /* Expressible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expressible.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,7 +81,8 @@
 			children = (
 				1211C7532112DC1A005C5F81 /* Expressible.h */,
 				1211C7542112DC1A005C5F81 /* Info.plist */,
-				1211C7572112DC3D005C5F81 /* Expressible.swift */,
+				1211C7572112DC3D005C5F81 /* Expressible1.swift */,
+				16DBDE8D23FAD39E006B0BC3 /* Expressible.swift */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -208,7 +210,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1211C7582112DC3D005C5F81 /* Expressible.swift in Sources */,
+				16DBDE8E23FAD39E006B0BC3 /* Expressible.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,8 +218,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				12A843172153930F00570A95 /* Expressible.swift in Sources */,
 				12A8431B2153936800570A95 /* Example.xcdatamodeld in Sources */,
+				16DBDE8F23FAD3A4006B0BC3 /* Expressible.swift in Sources */,
 				12A8430F215392FE00570A95 /* Expressible_Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

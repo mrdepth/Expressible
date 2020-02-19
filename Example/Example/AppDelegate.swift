@@ -33,8 +33,8 @@ extension AppDelegate {
 			let context = persistentContainer.viewContext
 			let result1 = try context
 				.from(City.self)
-				.filter(\City.population > 1_000_000)
-				.sort(by: \City.population, ascending: false)
+				.filter(/\City.population > 1_000_000)
+                .sort(by: \City.population, ascending: false)
 				.sort(by: \City.name, ascending: true)
 				.fetch()
 			
@@ -56,11 +56,11 @@ extension AppDelegate {
 			let context = persistentContainer.viewContext
 			let result1 = try context
 				.from(City.self)
-				.group(by: [(\City.province?.name).as(String.self, name: "province")])
-				.having(\City.province?.country?.name == "Belarus")
+                .group(by: [(/\City.province?.name).as(String.self, name: "province")])
+				.having((/\City.province?.country?.name) == "Belarus")
 				.select([
-					(\City.province?.name).as(String.self, name: "province"),
-					(\City.population).sum.as(Int.self, name: "population")
+					(/\City.province?.name).as(String.self, name: "province"),
+					(/\City.population).sum.as(Int.self, name: "population")
 					])
 				.fetch()
 			
@@ -94,10 +94,9 @@ extension AppDelegate {
 	func sample4() {
 		do {
 			let context = persistentContainer.viewContext
-			
 			let result1 = try context
 				.from(Country.self)
-				.filter((\Country.provinces).subquery((\Province.cities).any(\City.population) > 10_000_000).count != 0)
+                .filter((/\Country.provinces).subquery((/\Province.cities).any(\City.population) > 10_000_000).count != 0)
 				.fetch()
 
 			
