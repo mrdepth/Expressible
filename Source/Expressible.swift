@@ -439,8 +439,8 @@ extension ExpressionProtocol where Value: CollectionType {
         UnaryFunctionExpression(argument: AggregateExpression(base: self, child: /keyPath, comparisonModifier: .direct), function: "abs:")
     }
 
-    public func subquery(_ predicate: PredicateProtocol) -> SubqueryExpression<Self, Value> {
-        SubqueryExpression(base: self, variable: "x", predicate: predicate)
+    public func subquery(_ predicate: PredicateProtocol, variable: String = "x") -> SubqueryExpression<Self, Value> {
+        SubqueryExpression(base: self, variable: variable, predicate: predicate)
     }
 
 }
