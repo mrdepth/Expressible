@@ -229,6 +229,7 @@ extension NSNumber: ComparableType {}
 extension Optional: ComparableType where Wrapped: ComparableType {}
 extension NSManagedObject: ComparableType {}
 extension NSManagedObjectID: ComparableType{}
+extension UUID: ComparableType{}
 
 extension ExpressionProtocol where Value: ComparableType {
     public static func < <T: ExpressionProtocol> (lhs: Self, rhs: T) -> Compare<Self, T> where T.Value == Value {

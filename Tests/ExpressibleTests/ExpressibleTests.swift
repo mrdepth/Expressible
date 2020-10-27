@@ -449,4 +449,3 @@ final class ExpressibleTests: XCTestCase {
         ("testExample", testBasic, testCount, testDelete, testFRC, testIn, testSelect1, testSelect2, testSelect3, testSelect4, testSelf, testSubquery, testSubrange, testUpdate),
     ]
 }
-
